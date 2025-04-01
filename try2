@@ -1,0 +1,340 @@
+use dac_dbt;
+
+-- 1. List the name, employee code and designationcode of each employee of the office
+select empname, empcode, desigcode
+from emp
+
+--  2. List all the departments and the budgets
+select deptname, budget
+from dept
+
+-- 3. List the employees and their respective department names
+select empname, deptname
+from emp, dept
+where emp.deptcode = dept.deptcode
+
+-- 4. List the employees who are not having any superior to work under
+select empname
+from emp
+where supcode is null
+
+-- 5. List the employees who are working directly under superior most employee of the office. (Assume the superior most employee is the employee who does not have a supervisor)
+select empname
+from emp
+where supcode = (
+	select empcode
+    from emp
+    where supcode is null
+)
+
+-- 6. List the employee(s) who is senior most in the office
+select empname, joindate
+from emp
+where joindate = (
+	select min(joindate)
+    from emp
+)
+
+-- 7. List the employees who will retire from the office next.
+select empname, birthdate
+from emp
+where birthdate = (
+	select min(birthdate)
+    from emp
+)
+
+-- 8. List the departments with the respective department managers
+select deptname, empname, designame
+from emp 
+inner join dept on emp.deptcode = dept.deptcode
+inner join desig on emp.desigcode = desig.desigcode
+where desig.desigcode = 'MNGR'
+
+-- 9. List the number of employees working for either ‘accounts’ or ‘personal’ or ‘purchase’ departments
+select count(*)
+from emp 
+where deptcode = (
+	select deptcode
+    from dept
+    where deptname ='accounts' or 'personal' or 'purchase'
+)
+
+-- 10. List the employees working for ‘accounts’ or ‘personal’ department
+select empname
+from emp 
+where deptcode = (
+	select deptcode
+    from dept
+    where deptname ='accounts' or 'personal'
+)
+
+-- 11. List the employees working for ‘accounts’ and ‘personal’ department
+select empname
+from emp 
+where deptcode = (
+	select deptcode
+    from dept
+    where deptname ='accounts' and 'personal'
+)
+
+-- 12. List the employees working for ‘accounts’ but not for ‘personal’ department
+select empname
+from emp 
+where deptcode = (
+	select deptcode
+    from dept
+    where deptname ='accounts'
+)
+and deptcode not in(
+	select deptcode
+    from dept
+    where deptname ='personal'
+)
+
+-- 13. List the youngest employee of the office
+select empname, birthdate
+from emp
+where birthdate = (
+	select max(birthdate)
+    from emp
+)
+
+-- 14. List the employees who are drawing basic pay not equal to 12400.
+select empname, basicpay
+from emp
+where basicpay != 12400
+
+-- 15. List the employees who are drawing basic salary between 11000 and 12000.
+select empname, basicpay
+from emp
+where basicpay between 1100 and 12000
+
+-- 16. List the employees who are drawing basic salary not between 11000 and 12000
+select empname, basicpay
+from emp
+where basicpay not between 1100 and 12000
+
+-- 17. List the employees who got salary allowance between Rs.1000 to Rs.1500 in the month of January 2012.
+
+-- 18. List the employees whose name ends with ‘i’ or ‘y’.
+select empname
+from emp
+where empname like '%i' or '%y'
+
+-- 19. List the employees who have atleast 25 years of experience
+select empname, timestampdiff(year, joindate, curdate()) as exp 
+from emp
+where timestampdiff(year, joindate, curdate())  >= 25
+
+-- 20. List the ‘Salesmen’ who have minimum 30 to 20 years of experience
+select empname, timestampdiff(year, joindate, curdate()) as exp 
+from emp, desig
+where designame = 'Sales Man' and timestampdiff(year, joindate, curdate()) between 20 and  30 
+
+-- 21. List the basic salary and half of the basic salary for each employee.
+select empname, basicpay, basicpay / 2 as half_sal
+from emp
+
+-- 22. List the employees and the latest take-home-pay of each employee. (Hint: Take-home-pay = basic + allowance - deductions)
+select empname, basic + allow - deduct as Take_home_pay, salmonth
+from emp, salary
+where emp.empcode = salary.empcode order by salmonth desc
+
+-- 23. List the employees and the latest take-home-pay of each employee of ‘Accounts’ department.
+select empname, basic + allow - deduct as Take_home_pay, deptname
+from emp, salary, dept
+where emp.empcode = salary.empcode and dept.deptname = 'Accounts'
+
+-- 24. List employees and their respective ages.
+select empname, timestampdiff(year, birthdate, curdate()) as age
+from emp
+
+-- 25. List all the ‘Accounts’ department employees, first ordered by their age and then by their names.
+select empname, timestampdiff(year, birthdate, curdate()) as age, deptname
+from emp, dept
+where deptname = 'Accounts' order by age and empname
+
+-- 26. List the number of employees directly reporting to ‘Reddy’
+select count(*)
+from emp
+where supcode = (
+	select empcode
+    from emp
+    where empname = 'Reddy'
+)
+
+-- 27. List the employees who have at least one person working under him/her and the number of their subordinates. List the employee with highest number of subordinates first, next the person with next highest number of subordinates and so on.
+
+----------------------------------------------------------------------------------------------------
+
+Here are the SQL queries for the remaining requests:
+
+27. Employees with at least one subordinate, sorted by highest number of subordinates
+sql
+Copy
+Edit
+SELECT e1.empname, COUNT(e2.empcode) AS num_subordinates 
+FROM emp e1 
+JOIN emp e2 ON e1.empcode = e2.supcode 
+GROUP BY e1.empname 
+ORDER BY num_subordinates DESC;
+28. Employees with at least 3 subordinates
+sql
+Copy
+Edit
+SELECT e1.empname, COUNT(e2.empcode) AS num_subordinates 
+FROM emp e1 
+JOIN emp e2 ON e1.empcode = e2.supcode 
+GROUP BY e1.empname 
+HAVING num_subordinates >= 3;
+29. Minimum and maximum salaries in each grade code
+sql
+Copy
+Edit
+SELECT gradecode, MIN(basicpay) AS min_salary, MAX(basicpay) AS max_salary 
+FROM emp 
+GROUP BY gradecode;
+30. Employees with their supervisor names
+sql
+Copy
+Edit
+SELECT e1.empname AS Employee, e2.empname AS Supervisor 
+FROM emp e1 
+LEFT JOIN emp e2 ON e1.supcode = e2.empcode;
+31. Number of officers reporting to supervisors with more than 3 subordinates
+sql
+Copy
+Edit
+SELECT e1.empname AS Supervisor, COUNT(e2.empcode) AS num_officers 
+FROM emp e1 
+JOIN emp e2 ON e1.empcode = e2.supcode 
+GROUP BY e1.empname 
+HAVING num_officers > 3;
+32. Employees who have not got any promotion till now
+sql
+Copy
+Edit
+SELECT empname 
+FROM emp 
+WHERE empcode NOT IN (SELECT DISTINCT empcode FROM history);
+33. Employee with maximum number of promotions
+sql
+Copy
+Edit
+SELECT empcode, COUNT(*) AS num_promotions 
+FROM history 
+GROUP BY empcode 
+ORDER BY num_promotions DESC 
+LIMIT 1;
+34. Employees promoted in the year 1991
+sql
+Copy
+Edit
+SELECT e.empname 
+FROM emp e 
+JOIN history h ON e.empcode = h.empcode 
+WHERE YEAR(h.changedate) = 1991;
+35. Department budget and total salary drawn by employees in each department
+sql
+Copy
+Edit
+SELECT d.deptname, d.budget, SUM(e.basicpay) AS total_salary 
+FROM dept d 
+JOIN emp e ON d.deptcode = e.deptcode 
+GROUP BY d.deptname, d.budget;
+36. Employee names in uppercase
+sql
+Copy
+Edit
+SELECT UPPER(empname) AS Employee_Name FROM emp;
+37. Employees drawing salary higher than ‘Jain’
+sql
+Copy
+Edit
+SELECT e.empname, e.basicpay 
+FROM emp e 
+WHERE e.basicpay > (SELECT basicpay FROM emp WHERE empname = 'Jain');
+38. Employees drawing higher salary than all employees in the range 11000-12000
+sql
+Copy
+Edit
+SELECT empname, basicpay 
+FROM emp 
+WHERE basicpay > (SELECT MAX(basicpay) FROM emp WHERE basicpay BETWEEN 11000 AND 12000);
+39. Employees earning above the average salary, sorted by salary
+sql
+Copy
+Edit
+SELECT empname, basicpay 
+FROM emp 
+WHERE basicpay > (SELECT AVG(basicpay) FROM emp) 
+ORDER BY basicpay ASC;
+40. Employees drawing the highest salary
+sql
+Copy
+Edit
+SELECT empname, basicpay 
+FROM emp 
+WHERE basicpay = (SELECT MAX(basicpay) FROM emp);
+41. Employees drawing salaries other than the highest salary
+sql
+Copy
+Edit
+SELECT empname, basicpay 
+FROM emp 
+WHERE basicpay < (SELECT MAX(basicpay) FROM emp);
+42. Employees drawing the highest salary in each department
+sql
+Copy
+Edit
+SELECT e.empname, e.deptcode, e.basicpay 
+FROM emp e 
+WHERE e.basicpay = (SELECT MAX(basicpay) FROM emp WHERE deptcode = e.deptcode);
+43. Employees getting the second highest salary
+sql
+Copy
+Edit
+SELECT empname, basicpay 
+FROM emp 
+WHERE basicpay = (SELECT DISTINCT basicpay FROM emp ORDER BY basicpay DESC LIMIT 1 OFFSET 1);
+44. Employees getting the fifth highest salary
+sql
+Copy
+Edit
+SELECT empname, basicpay 
+FROM emp 
+WHERE basicpay = (SELECT DISTINCT basicpay FROM emp ORDER BY basicpay DESC LIMIT 1 OFFSET 4);
+45. Department of the highest-paid female employee
+sql
+Copy
+Edit
+SELECT d.deptname 
+FROM emp e 
+JOIN dept d ON e.deptcode = d.deptcode 
+WHERE e.sex = 'F' 
+ORDER BY e.basicpay DESC 
+LIMIT 1;
+46. Male employees earning more than at least one female employee
+sql
+Copy
+Edit
+SELECT DISTINCT e1.empname, e1.basicpay 
+FROM emp e1 
+WHERE e1.sex = 'M' 
+AND e1.basicpay > (SELECT MIN(basicpay) FROM emp WHERE sex = 'F');
+47. Departments where the average salary is higher than the company average
+sql
+Copy
+Edit
+SELECT d.deptname 
+FROM dept d 
+JOIN emp e ON d.deptcode = e.deptcode 
+GROUP BY d.deptname 
+HAVING AVG(e.basicpay) > (SELECT AVG(basicpay) FROM emp);
+48. Employees earning below the average salary of the 'Accounts' department
+sql
+Copy
+Edit
+SELECT empname, basicpay 
+FROM emp 
+WHERE basicpay < (SELECT AVG(basicpay) FROM emp WHERE deptcode = (SELECT deptcode FROM dept WHERE deptname = 'accounts'));
