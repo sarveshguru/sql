@@ -1,0 +1,73 @@
+1. Insert Multiple Employees
+db.employees.insertMany([
+  {
+    "emp_id": 106,
+    "first_name": "Rahul",
+    "last_name": "Gupta",
+    "email": "rahul.gupta@company.in",
+    "hire_date": "2022-03-05",
+    "salary": 65000,
+    "department": "Marketing"
+  },
+  {
+    "emp_id": 107,
+    "first_name": "Neha",
+    "last_name": "Kapoor",
+    "email": "neha.kapoor@company.in",
+    "hire_date": "2020-07-15",
+    "salary": 72000,
+    "department": "HR"
+  },
+  {
+    "emp_id": 108,
+    "first_name": "Anil",
+    "last_name": "Yadav",
+    "email": "anil.yadav@company.in",
+    "hire_date": "2019-05-10",
+    "salary": 78000,
+    "department": "Finance"
+  },
+  {
+    "emp_id": 109,
+    "first_name": "Sonia",
+    "last_name": "Mishra",
+    "email": "sonia.mishra@company.in",
+    "hire_date": "2021-11-25",
+    "salary": 60000,
+    "department": "IT"
+  },
+  {
+    "emp_id": 110,
+    "first_name": "Manish",
+    "last_name": "Rana",
+    "email": "manish.rana@company.in",
+    "hire_date": "2018-06-18",
+    "salary": 88000,
+    "department": "IT"
+  }
+]);
+2. Retrieve All Employees
+db.employees.find().pretty();
+3. Find an Employee by Name
+db.employees.find({ "first_name": "Rahul" }).pretty();
+4. Update Employee Salary (Increase by 10% for emp_id = 103)
+db.employees.updateOne(
+  { "emp_id": 103 },
+  { $mul: { "salary": 1.1 } }
+);
+5. Delete Employee (emp_id = 105)
+db.employees.deleteOne({ "emp_id": 105 });
+Querying & Sorting
+6. Retrieve Employees in IT Department
+db.employees.find({ "department": "IT" }).pretty();
+7. Find Employees Earning More Than 70,000
+db.employees.find({ "salary": { $gt: 70000 } }).pretty();
+8. Sort Employees by Salary (Descending Order)
+db.employees.find().sort({ "salary": -1 }).pretty();
+9. Find the Oldest Employee (by Hire Date)
+db.employees.find().sort({ "hire_date": 1 }).limit(1).pretty();
+10. Retrieve Employees with 'A' as First Letter and 'N' as Last Letter
+db.employees.find({ 
+  "first_name": /^A/, 
+  "last_name": /N$/i 
+}).pretty();
